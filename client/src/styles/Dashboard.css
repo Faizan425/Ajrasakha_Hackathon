@@ -1,0 +1,39 @@
+/* client/src/styles/Dashboard.css */
+
+.dashboard-container {
+  padding: 20px;
+  max-width: 800px; /* Keeps it looking like an app on desktop */
+  margin: 0 auto;
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.dashboard-header {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.dashboard-header h1 {
+  color: #1b5e20; /* Deep Green */
+  font-size: 1.8rem;
+  margin-bottom: 5px;
+}
+
+.dashboard-header p {
+  color: #666;
+  font-size: 0.9rem;
+  margin-top: 0;
+}
+
+/* Loading & Empty States */
+.loading-state, .empty-state {
+  text-align: center;
+  padding: 40px;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+  margin-top: 20px;
+  color: #555;
+  font-weight: 500;
+}

@@ -1,0 +1,54 @@
+.swipe-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: 400px;
+  margin: 20px auto;
+  border-radius: 20px;
+}
+
+.slider-track {
+  display: flex;
+  transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  width: 100%;
+}
+
+.slide {
+  min-width: 100%;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.navigation-controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px;
+}
+
+.dots {
+  display: flex;
+  gap: 8px;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  background: #ccc;
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.dot.active {
+  background: #2e7d32;
+  transform: scale(1.2);
+}
+
+.nav-btn {
+  background: #f0f0f0;
+  border: none;
+  padding: 8px 15px;
+  border-radius: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}

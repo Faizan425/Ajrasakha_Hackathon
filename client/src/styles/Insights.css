@@ -1,0 +1,98 @@
+.insights-page {
+  padding: 20px;
+  background: #fdfdfd;
+}
+
+.insights-header h1 {
+  color: #1b5e20;
+  margin-bottom: 5px;
+}
+
+.insights-header p {
+  color: #666;
+  font-size: 0.9rem;
+}
+
+.insights-grid {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.insight-card {
+  background: white;
+  border-radius: 20px;
+  padding: 24px;
+  border: 1px solid #edf2f7;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.05);
+}
+
+.insight-tags {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.tag {
+  background: #e8f5e9;
+  color: #2e7d32;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.difficulty {
+  margin-left: auto;
+  font-size: 0.75rem;
+  color: #f57c00;
+  font-weight: bold;
+}
+
+.insight-card h2 {
+  font-size: 1.25rem;
+  margin-bottom: 15px;
+  color: #2d3748;
+}
+
+.insight-section {
+  margin-bottom: 15px;
+}
+
+.insight-section h3 {
+  font-size: 0.9rem;
+  color: #718096;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+}
+
+.insight-section p {
+  font-size: 1rem;
+  line-height: 1.5;
+  color: #4a5568;
+}
+
+.next-steps {
+  background: #f0f7ff;
+  padding: 12px;
+  border-radius: 12px;
+  border-left: 4px solid #3182ce;
+}
+
+.learn-more-btn {
+  width: 100%;
+  padding: 12px;
+  background: #2e7d32;
+  color: white;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.learn-more-btn:hover {
+  background: #1b5e20;
+}

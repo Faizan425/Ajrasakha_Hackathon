@@ -1,0 +1,70 @@
+.card {
+  background: white;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  min-height: 350px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.circular-progress {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.inner-circle {
+  width: 120px;
+  height: 120px;
+  background: white;
+  border-radius: 50%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.score {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.recommendation {
+  margin-top: auto;
+  background: #f9f9f9;
+  padding: 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  border-left: 4px solid #2e7d32;
+}
+.droplet-container {
+  width: 80px;
+  height: 100px;
+  margin: 20px auto;
+  border-radius: 50% 50% 50% 50% / 10% 10% 90% 90%;
+  transform: rotate(-45deg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 3px solid #01579b;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.5s ease;
+}
+
+.ndwi-val {
+  transform: rotate(45deg); /* Un-rotate text */
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem;
+  z-index: 2;
+}
+
+.water-rec { border-left-color: #0288d1; }
