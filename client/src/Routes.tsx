@@ -4,7 +4,6 @@ import Dashboard from "./pages/Dashboard";
 import Heatmap from "./pages/Heatmap";
 import Alerts from "./pages/Alerts";
 import Insights from "./pages/Insights";
-import Profile from "./pages/Profile";
 import MapPage from "./pages/MapPage";
 import Operations from "./pages/Operations";
 
@@ -16,7 +15,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/heatmap" element={<Heatmap />} />
         <Route path="/alerts" element={<Alerts />} />
         <Route path="/insights" element={<Insights />} />
-        <Route path="/profile" element={<Profile />} />
+        {/*<Route path="/profile" element={<Profile />} />*/}
         <Route path="/map" element={<MapPage />} />
         <Route path="/ops" element={<Operations />} />
       </Routes>

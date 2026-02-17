@@ -35,11 +35,6 @@ const Navbar: React.FC = () => {
             Ops Center
           </NavLink>
         </li>
-        <li>
-          <NavLink to="/profile" style={navStyle}>
-            Profile
-          </NavLink>
-        </li>
       </ul>
     </div>
   );
