@@ -32,12 +32,20 @@ export default function RegionMarkers({ onSelect }: Props) {
     if (status === "Moderate") color = "orange";
     if (status === "Critical") color = "red";
 
+    // return new L.Icon({
+    //   iconUrl: `/markers/marker-${color}.png`, // Points to public/markers/
+    //   iconSize: [25, 41],
+    //   iconAnchor: [12, 41],
+    //   popupAnchor: [1, -34],
+    //   shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+    // });
     return new L.Icon({
-      iconUrl: `/markers/marker-${color}.png`, // Points to public/markers/
+      iconUrl: `https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-${color}.png`,
+      shadowUrl: "https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png",
       iconSize: [25, 41],
       iconAnchor: [12, 41],
       popupAnchor: [1, -34],
-      shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png"
+      shadowSize: [41, 41]
     });
   };
 
@@ -58,6 +66,7 @@ export default function RegionMarkers({ onSelect }: Props) {
           <Popup>
             <strong>{region.name}</strong><br/>
             Status: {region.status}
+            {console.log(region)}
           </Popup>
         </Marker>
       ))}

@@ -35,6 +35,11 @@ const Navbar: React.FC = () => {
             Ops Center
           </NavLink>
         </li>
+        <li style={{ marginLeft: 'auto' }}> {/* Pushes it to the right */}
+          <NavLink to="/login" style={{...navStyle({isActive: false}), background: '#dc2626', padding: '8px 16px', borderRadius: '4px' }}>
+            Admin Login
+          </NavLink>
+        </li>
       </ul>
     </div>
   );

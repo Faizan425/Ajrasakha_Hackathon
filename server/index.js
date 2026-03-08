@@ -1,11 +1,23 @@
+const path = require('path');
+// __dirname is the absolute path to the folder containing this index.js file
+require('dotenv').config({ path: path.join(__dirname, '../.env') }); 
+
+console.log("MY API KEY IS:", process.env.GEMINI_API_KEY);
 const express = require('express');
+const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const Region = require('./models/Region');
 const CropData = require('./models/CropData');
 const { fetchSatelliteData } = require('./satellite');
-const Alert = require('./models/Alert'); 
+const Alert = require('./models/Alert');
+const Insight = require('./models/Insight');
+const { GoogleGenerativeAI } = require('@google/generative-ai');
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); 
 const cron = require('node-cron');
+
+
+const JWT_SECRET = "super_secret_hackathon_key_2026";
 
 const app = express();
 app.use(cors()); 
@@ -31,13 +43,48 @@ app.get('/api/regions', async (req, res) => {
         _id: region._id,
         name: region.name,
         coordinates: region.coordinates,
-        
+        latestNDVI:region.latestNDVI,
         cropType: region.cropType,
-        status: latestData ? latestData.metrics.status : "Unknown" 
+        status: region.status
       };
     }));
 
     res.json(regionsWithStatus);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.post('/api/login', (req, res) => {
+  const {username, password} = req.body;
+
+  if(username === 'admin' && password === 'admin123') {
+    const token = jwt.sign({role: 'admin'}, JWT_SECRET, {expiresIn: '2h'});
+    res.json({ token });
+  } else {
+    res.status(401).json({error: 'Invalid credentials'});
+  }
+});
+
+const verifyAdmin = (req, res, next) =>{
+  const authHeader = req.headers.authorization;
+  if(!authHeader){ return res.status(403).json({error: "Access Denied: No Token Provided!" });}
+
+  const token = authHeader.split(" ")[1];
+  jwt.verify(token, JWT_SECRET, (err, decoded) => {
+    if(err) return res.status(401).json({ error: "Invalid or Expired Token!" });
+    next();
+  });
+};
+
+app.post('/api/alerts', verifyAdmin , async (req,res) => {
+  try {
+    const newAlert = await Alert.create({
+      ...req.body,
+      date: "Just now",
+      status: "active"
+    });
+    res.json(newAlert);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -60,7 +107,7 @@ app.post('/api/run-pipeline', async (req, res) => {
   
   
   for (const region of regions) {
-    const newData = fetchSatelliteData(region.cropType);
+    const newData = fetchSatelliteData(region.name);
     
     await CropData.create({
       regionId: region._id,
@@ -90,16 +137,87 @@ app.get('/api/regions/:id/health', async (req, res) => {
     
     const response = {
       regionName: region.name,
-      latestNDVI: allData[0].metrics.ndvi,
-      status: allData[0].metrics.status,
-      // Convert DB history to simple array
+      latestNDVI: region.latestNDVI || 0, 
+      status: region.status || "No Data",
+      // Convert DB history to simple array (will be empty array if no CropData exists yet)
       history: allData.map(d => ({
         date: d.timestamp, 
-        ndvi: d.metrics.ndvi
+        ndvi: d.metrics?.ndvi || 0
       }))
     };
 
     res.json(response);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+app.get('/api/insights', async (req, res) => {
+  try {
+    const insights = await Insight.find().sort({ date: -1 });
+    res.json(insights);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// 2. CREATE INSIGHT (Protected Admin Route)
+app.post('/api/insights', verifyAdmin, async (req, res) => {
+  try {
+    const newInsight = await Insight.create(req.body);
+    res.json(newInsight);
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
+});
+
+// --- THE REAL "DEEP ANALYSIS" AI ROUTE ---
+app.post('/api/analyze', async (req, res) => {
+  const { title, cause, prediction } = req.body;
+  
+  try {
+    // 1. Select the Gemini 1.5 Flash model (it is incredibly fast)
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    // 2. The "System Prompt" - This is where you tell the AI how to behave
+    const prompt = `
+      You are an expert agricultural scientist and government policy advisor in India. 
+      Analyze the following crop issue reported by a satellite monitoring system:
+      
+      - Alert Title: ${title}
+      - Detected Cause: ${cause}
+      - Risk/Prediction: ${prediction}
+      
+      Provide a highly professional, concise, 3-step actionable intervention plan to mitigate this issue. 
+      Format your response as a simple list. Do not use markdown formatting like **bolding** or # headers. Keep it strictly under 5 sentences.
+    `;
+
+    // 3. Send the prompt to Gemini and wait for the response
+    const result = await model.generateContent(prompt);
+    const aiResponse = result.response.text();
+    
+    // 4. Send the AI's brilliant plan back to your React frontend
+    res.json({ analysis: aiResponse });
+
+  } catch (err) {
+    console.error("AI Generation Error:", err);
+    res.status(500).json({ error: "AI Engine Failed to respond." });
+  }
+});
+
+app.put('/api/alerts/:id/status', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body; // We will send 'active' or 'completed' from React
+    
+    // Find the alert by ID and update its status
+    const updatedAlert = await Alert.findByIdAndUpdate(
+      id, 
+      { status: status.toLowerCase() }, 
+      { new: true } // Returns the updated document
+    );
+    
+    res.json(updatedAlert);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
@@ -115,7 +233,7 @@ cron.schedule('0 0 * * *', async () => {
 
     for (const region of regions) {
       
-      const newData = fetchSatelliteData(region.cropType); 
+      const satelliteData = await fetchSatelliteData(region.name);  
       
       
       await CropData.create({

@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Alerts.css';
 
-// Define the Alert Interface
 interface Alert {
-  _id: string; // MongoDB uses _id, not id
+  _id: string;
   crop: string;
   type: string;
   severity: string;
   message: string;
   action: string;
   date: string;
-  status: 'active' | 'completed';
+  status: string; 
 }
 
 const AlertsPage: React.FC = () => {
@@ -29,16 +28,41 @@ const AlertsPage: React.FC = () => {
       .catch(err => console.error("Error fetching alerts:", err));
   }, []);
 
-  // LOCAL TOGGLE (Ideally you would also send a POST request to backend to save this change)
-  const toggleStatus = (id: string) => {
-    setAlerts(prev => prev.map(alert => 
-      alert._id === id 
-        ? { ...alert, status: alert.status === 'active' ? 'completed' : 'active' } 
-        : alert
-    ));
+ 
+  const toggleStatus = async (id: string, currentStatus: string) => {
+    // 1. Determine the new status
+    const isCurrentlyActive = currentStatus.toLowerCase() === 'active';
+    const newStatus = isCurrentlyActive ? 'completed' : 'active';
+
+    try {
+      
+      const res = await fetch(`http://localhost:5000/api/alerts/${id}/status`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (res.ok) {
+        // 3. If the database update was successful, update the React UI
+        setAlerts(prev => prev.map(alert => 
+          alert._id === id ? { ...alert, status: newStatus } : alert
+        ));
+      } else {
+        console.error("Failed to update status in DB");
+      }
+    } catch (err) {
+      console.error("Network error:", err);
+    }
   };
 
-  const filteredAlerts = alerts.filter(a => a.status === filter);
+  // Safe filtering for case sensitivity
+  const filteredAlerts = alerts.filter(a => 
+    a.status && a.status.toLowerCase() === filter.toLowerCase()
+  );
+
+  // Safe counting for the tabs
+  const activeCount = alerts.filter(a => a.status && a.status.toLowerCase() === 'active').length;
+  const historyCount = alerts.filter(a => a.status && a.status.toLowerCase() === 'completed').length;
 
   return (
     <div className="alerts-page">
@@ -52,13 +76,13 @@ const AlertsPage: React.FC = () => {
           className={`tab-btn ${filter === 'active' ? 'active' : ''}`}
           onClick={() => setFilter('active')}
         >
-          Active ({alerts.filter(a => a.status === 'active').length})
+          Active ({activeCount})
         </button>
         <button 
           className={`tab-btn ${filter === 'completed' ? 'active' : ''}`}
           onClick={() => setFilter('completed')}
         >
-          History ({alerts.filter(a => a.status === 'completed').length})
+          History ({historyCount})
         </button>
       </div>
 
@@ -71,8 +95,7 @@ const AlertsPage: React.FC = () => {
           </div>
         ) : (
           filteredAlerts.map((alert) => (
-            // Note: Using alert._id here
-            <div key={alert._id} className={`alert-item ${alert.severity} ${alert.status}`}>
+            <div key={alert._id} className={`alert-item ${alert.severity} ${alert.status.toLowerCase()}`}>
               <div className="alert-icon-section">
                 <span className="severity-dot"></span>
                 <div className="alert-meta">
@@ -83,7 +106,7 @@ const AlertsPage: React.FC = () => {
               
               <p className="alert-message"><strong>{alert.type}:</strong> {alert.message}</p>
               
-              {alert.status === 'active' && (
+              {alert.status.toLowerCase() === 'active' && (
                 <div className="alert-action-box">
                    <strong>Fix:</strong> {alert.action}
                 </div>
@@ -92,9 +115,9 @@ const AlertsPage: React.FC = () => {
               <div className="alert-footer">
                 <button 
                   className="status-toggle-btn"
-                  onClick={() => toggleStatus(alert._id)}
+                  onClick={() => toggleStatus(alert._id, alert.status)}
                 >
-                  {alert.status === 'active' ? 'Mark as Resolved' : 'Re-open Alert'}
+                  {alert.status.toLowerCase() === 'active' ? 'Mark as Resolved' : 'Re-open Alert'}
                 </button>
               </div>
             </div>

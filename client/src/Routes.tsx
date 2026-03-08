@@ -6,6 +6,8 @@ import Alerts from "./pages/Alerts";
 import Insights from "./pages/Insights";
 import MapPage from "./pages/MapPage";
 import Operations from "./pages/Operations";
+import Login from "./pages/Login";
+import AdminDashboard from "./pages/AdminDashboard";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -18,6 +20,8 @@ const AppRoutes: React.FC = () => {
         {/*<Route path="/profile" element={<Profile />} />*/}
         <Route path="/map" element={<MapPage />} />
         <Route path="/ops" element={<Operations />} />
+        <Route path = "/login" element = {<Login />} />
+        <Route path="/admin-dashboard" element={<AdminDashboard />} />
       </Routes>
     </MainLayout>
   );

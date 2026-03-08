@@ -17,6 +17,7 @@ const HealthSummaryCard = ({ data }: any) => {
         }}>
           <div className="inner-circle">
             <span className="score">{data.ndvi}</span>
+            {console.log(data.ndvi)}
             <span className="label">NDVI Index</span>
           </div>
         </div>

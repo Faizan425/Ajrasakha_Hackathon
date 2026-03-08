@@ -12,7 +12,7 @@ export default function RegionPanel({ region }: Props) {
   useEffect(() => {
     if (!region) return;
 
-    api.get<RegionHealth>(`/regions/${region._id}/health`)
+    api.get(`/regions/${region._id}/health`)
       .then(res => setHealth(res.data));
   }, [region]);
 
