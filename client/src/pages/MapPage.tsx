@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import "../styles/MapPage.css";
 
 import { INDIA_STATES, type StateInfo } from "../data/indiaStates";
 import StatePanel from "../components/StatePanel";
@@ -13,20 +14,35 @@ import type { Region } from "../types";
 export default function MapPage() {
   const [selectedState, setSelectedState] = useState<StateInfo | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const [isSatellite, setIsSatellite] = useState(false);
 
   return (
-    <div style={{ display: "flex", height: "calc(100vh - 60px)" }}> {/* Subtract Navbar height */}
+    <div className="map-page-container">
       
       {/* LEFT: THE MAP */}
-      <div style={{ flex: 1, position: "relative" }}>
+      <div className="map-container">
+        {/* SATELLITE TOGGLE BUTTON */}
+        <button 
+          className="map-toggle-btn"
+          onClick={() => setIsSatellite(!isSatellite)}
+        >
+          {isSatellite ? "🗺️ Standard View" : "🛰️ Satellite View"}
+        </button>
+
         <MapContainer
           center={[22.5, 78.9]}
           zoom={5}
           style={{ height: "100%", width: "100%" }}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; OpenStreetMap contributors'
+            url={isSatellite 
+              ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            }
+            attribution={isSatellite
+              ? "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+              : "&copy; OpenStreetMap contributors"
+            }
           />
 
           <MapController selectedState={selectedState} />
@@ -38,7 +54,7 @@ export default function MapPage() {
       </div>
 
       {/* RIGHT: CONTROL PANEL */}
-      <div style={{ display: "flex", flexDirection: "column", width: "300px", borderLeft: "2px solid #ddd" }}>
+      <div className="control-panel-container">
         
         {/* Top: State Selector */}
         <div style={{ height: "50%", overflowY: "auto", borderBottom: "1px solid #ddd" }}>
