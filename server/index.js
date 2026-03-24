@@ -1,6 +1,7 @@
 const path = require('path');
+const PDFDocument = require('pdfkit');
 // __dirname is the absolute path to the folder containing this index.js file
-require('dotenv').config({ path: path.join(__dirname, '../.env') }); 
+require('dotenv').config();
 
 console.log("MY API KEY IS:", process.env.GEMINI_API_KEY);
 const express = require('express');
@@ -164,7 +165,12 @@ app.get('/api/insights', async (req, res) => {
 // 2. CREATE INSIGHT (Protected Admin Route)
 app.post('/api/insights', verifyAdmin, async (req, res) => {
   try {
-    const newInsight = await Insight.create(req.body);
+   const region = await Region.findOne();  // get a region
+
+const newInsight = await Insight.create({
+  ...req.body,
+  regionId: region._id   // 🔥 ADD THIS
+});
     res.json(newInsight);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -197,7 +203,17 @@ app.post('/api/analyze', async (req, res) => {
     const aiResponse = result.response.text();
     
     // 4. Send the AI's brilliant plan back to your React frontend
-    res.json({ analysis: aiResponse });
+   const region = await Region.findOne();
+
+await Insight.create({
+  regionId: region._id,
+  title,
+  cause,
+  prediction,
+  recommendation: aiResponse
+});
+
+res.json({ analysis: aiResponse });
 
   } catch (err) {
     console.error("AI Generation Error:", err);
@@ -253,7 +269,46 @@ app.get('/api/alerts', async (req, res) => {
   const alerts = await Alert.find();
   res.json(alerts);
 });
+app.get('/api/report/:id', async (req, res) => {
+  try {
+    const region = await Region.findById(req.params.id);
 
+    const data = await CropData.findOne({
+      regionId: req.params.id,
+      "metrics.ndvi": { $exists: true }
+    }).sort({ timestamp: -1 });
+
+    const insight = await Insight.findOne({
+      regionId: req.params.id
+    }).sort({ date: -1 });
+
+    const doc = new PDFDocument();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=report.pdf');
+
+    doc.pipe(res);
+
+    doc.fontSize(20).text('Farmer Advisory Report', { align: 'center' });
+    doc.moveDown();
+
+    doc.text(`Region: ${region?.name}`);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`);
+
+    doc.moveDown();
+    doc.text('Crop Data:');
+    doc.text(`NDVI: ${data?.metrics?.ndvi || 'N/A'}`);
+
+    doc.moveDown();
+    doc.text('AI Recommendation:');
+    doc.text(insight?.recommendation || 'No insight available');
+
+    doc.end();
+
+  } catch (err) {
+    res.status(500).send('Error generating report');
+  }
+});
 app.listen(5000, () => {
   console.log('🚀 Server running on http://localhost:5000');
 });
