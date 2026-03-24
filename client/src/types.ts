@@ -5,6 +5,10 @@ export interface Region {
     lat: number;
     lng: number;
   };
+  cropType?: string;
+  status?: string;
+  latestNDVI?: number;
+  trend?: string;
 }
 
 export interface NDVIRecord {

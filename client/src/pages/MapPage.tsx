@@ -1,32 +1,75 @@
 // client/src/pages/MapPage.tsx
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MapContainer, TileLayer } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
+import "../styles/MapPage.css";
 
 import { INDIA_STATES, type StateInfo } from "../data/indiaStates";
 import StatePanel from "../components/StatePanel";
 import MapController from "../components/MapController";
-import RegionMarkers from "../components/RegionMarkers"; // <--- We use the REAL markers
+import RegionMarkers from "../components/RegionMarkers";
 import RegionPanel from "../components/RegionPanel";
 import type { Region } from "../types";
+import { api } from "../services/api";
 
 export default function MapPage() {
   const [selectedState, setSelectedState] = useState<StateInfo | null>(null);
   const [selectedRegion, setSelectedRegion] = useState<Region | null>(null);
+  const [isSatellite, setIsSatellite] = useState(false);
+  const [regions, setRegions] = useState<Region[]>([]);
+
+  useEffect(() => {
+    api.get("/regions").then((res) => setRegions(res.data));
+  }, []);
+
+  const totalDistricts = regions.length;
+  const criticalCount = regions.filter((r) => r.status === "Critical").length;
+  const avgNdvi = regions.length 
+    ? (regions.reduce((acc, r) => acc + (r.latestNDVI || 0), 0) / regions.length).toFixed(2)
+    : "0.00";
 
   return (
-    <div style={{ display: "flex", height: "calc(100vh - 60px)" }}> {/* Subtract Navbar height */}
+    <div className="map-page-container">
       
       {/* LEFT: THE MAP */}
-      <div style={{ flex: 1, position: "relative" }}>
+      <div className="map-container">
+        <div className="map-summary-container">
+          <div className="summary-card">
+            <span className="label">Regions</span>
+            <span className="value">{totalDistricts}</span>
+          </div>
+          <div className="summary-card critical">
+            <span className="label">Critical</span>
+            <span className="value">{criticalCount}</span>
+          </div>
+          <div className="summary-card healthy">
+            <span className="label">Avg NDVI</span>
+            <span className="value">{avgNdvi}</span>
+          </div>
+        </div>
+
+        {/* SATELLITE TOGGLE BUTTON */}
+        <button 
+          className="map-toggle-btn"
+          onClick={() => setIsSatellite(!isSatellite)}
+        >
+          {isSatellite ? "🗺️ Standard View" : "🛰️ Satellite View"}
+        </button>
+
         <MapContainer
           center={[22.5, 78.9]}
           zoom={5}
           style={{ height: "100%", width: "100%" }}
         >
           <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; OpenStreetMap contributors'
+            url={isSatellite 
+              ? "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+              : "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+            }
+            attribution={isSatellite
+              ? "Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community"
+              : "&copy; OpenStreetMap contributors"
+            }
           />
 
           <MapController selectedState={selectedState} />
@@ -38,7 +81,7 @@ export default function MapPage() {
       </div>
 
       {/* RIGHT: CONTROL PANEL */}
-      <div style={{ display: "flex", flexDirection: "column", width: "300px", borderLeft: "2px solid #ddd" }}>
+      <div className="control-panel-container">
         
         {/* Top: State Selector */}
         <div style={{ height: "50%", overflowY: "auto", borderBottom: "1px solid #ddd" }}>
