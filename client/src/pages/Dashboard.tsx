@@ -91,6 +91,7 @@ import React, { useState, useEffect } from 'react';
 import CropSelector from '../components/CropSelector';
 import SwipeableCards from '../components/SwipeableCards';
 import '../styles/Dashboard.css';
+import WeatherCard from '../components/WeatherCard';
 
 // Define the shape of data we expect from the API
 interface DashboardData {
@@ -147,6 +148,7 @@ const Dashboard: React.FC = () => {
 
     fetchData();
   }, [selectedCrop]);
+   {console.log("SELECTED CROP:", selectedCrop)}
 
   return (
     <div className="dashboard-container">
@@ -159,6 +161,11 @@ const Dashboard: React.FC = () => {
         selected={selectedCrop} 
         onSelect={(crop) => setSelectedCrop(crop)} 
       />
+      <div style={{ display: 'flex', justifyContent: 'center', margin: '15px 0' }}>
+  <WeatherCard crop={selectedCrop} />
+ 
+</div>
+     
       {/*{console.log(data)}*/}
       {loading ? (
         <div style={{textAlign: 'center', padding: '20px', color: 'white'}}>
