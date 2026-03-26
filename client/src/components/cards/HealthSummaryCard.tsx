@@ -16,8 +16,9 @@ const HealthSummaryCard = ({ data }: any) => {
           background: `conic-gradient(${getStatusColor(data.ndvi)} ${data.ndvi * 360}deg, #e0e0e0 0deg)` 
         }}>
           <div className="inner-circle">
-            <span className="score">{data.ndvi}</span>
-            {console.log(data.ndvi)}
+            {/* <span className="score">{data.ndvi}</span> */}
+            <span className="score">{Number(data.ndvi).toFixed(2)}</span>
+            {/* {console.log(data.ndvi)} */}
             <span className="label">NDVI Index</span>
           </div>
         </div>

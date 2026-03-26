@@ -99,7 +99,7 @@ const WeatherCard: React.FC<Props> = ({ crop }) => {
 
         // 🔥 3. Fetch weather using coordinates
         const weatherRes = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=68f4118907ed0202d1a37608bcdf4055&units=metric`
+          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=Weather_API&units=metric`
         );
 
         const data = await weatherRes.json();

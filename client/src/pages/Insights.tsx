@@ -1,5 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Insights.css';
+import { useNavigate } from "react-router-dom";
+  // ✅ IMPORTANT
+
+  
+
 
 interface Insight {
   _id: string;
@@ -12,6 +17,7 @@ interface Insight {
 }
 
 const InsightsPage: React.FC = () => {
+   const navigate = useNavigate(); 
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -101,6 +107,21 @@ const InsightsPage: React.FC = () => {
 >
   📄 Download Report
 </button>
+<button 
+  onClick={() => navigate(`/trends/${item.regionId}`)}
+  style={{
+    marginTop: "10px",
+    padding: "8px 14px",
+    backgroundColor: "#16a34a",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "0.9rem"
+  }}
+>
+  📈 View Trend Analysis
+</button>
               </div>
             ) : (
               <><button 
@@ -111,6 +132,7 @@ const InsightsPage: React.FC = () => {
               >
                 {analyzingId === item._id ? '🤖 Analyzing Data...' : 'Read Deep Analysis'}
               </button>
+             
               {/* <button onClick={() => downloadReport(item.regionId)}>
     📄 Download Report
   </button> */}
