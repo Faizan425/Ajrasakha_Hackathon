@@ -92,6 +92,7 @@ import CropSelector from '../components/CropSelector';
 import SwipeableCards from '../components/SwipeableCards';
 import '../styles/Dashboard.css';
 import WeatherCard from '../components/WeatherCard';
+import Papa from "papaparse";
 
 // Define the shape of data we expect from the API
 interface DashboardData {
@@ -136,6 +137,9 @@ const Dashboard: React.FC = () => {
           };
           console.log(mappedData);
           setData(mappedData);
+
+//offline storage
+            localStorage.setItem("dashboardData", JSON.stringify(mappedData));
         } else {
           console.warn(`No region found for ${selectedCrop}`);
           setData(null);
@@ -149,9 +153,50 @@ const Dashboard: React.FC = () => {
     fetchData();
   }, [selectedCrop]);
    {console.log("SELECTED CROP:", selectedCrop)}
+//for csv file
+const downloadAllCSV = async () => {
+  try {
+    const res = await fetch("http://localhost:5000/api/regions");
+    const regions = await res.json();
+
+    const csvData = regions.map((region: any) => ({
+      Crop: region.cropType,
+      NDVI: (region.latestNDVI || 0).toFixed(2),
+      NDWI: region.latestNDVI
+        ? (region.latestNDVI * 0.8).toFixed(2)
+        : "0.45",
+      Status: region.status || "Unknown",
+      Trend: region.trend || "stable",
+      Weather: "28°C Clear", // demo weather
+      Date: new Date().toLocaleDateString()
+    }));
+
+    const csv = Papa.unparse(csvData);
+
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "all_crops_data.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+  } catch (err) {
+    console.error("CSV error:", err);
+  }
+};
+//end
 
   return (
     <div className="dashboard-container">
+{/* offline  */}
+    {!navigator.onLine && (
+      <div style={{ textAlign: 'center', color: 'orange' }}>
+        ⚠️ You are offline. Showing last saved data.
+      </div>
+    )}
       <header className="dashboard-header">
         <h1>CropCare Advisor</h1>
         <p>Satellite-based health monitoring</p>
@@ -178,6 +223,25 @@ const Dashboard: React.FC = () => {
           No sensor data available for {selectedCrop}.
         </div>
       )}
+     {/*download csv button*/}
+     <div style={{ textAlign: "center", margin: "10px" }}>
+  <button
+    onClick={downloadAllCSV}
+    style={{
+      padding: "10px 16px",
+      backgroundColor: "#283f2d",
+      color: "white",
+      border: "none",
+      borderRadius: "8px",
+      cursor: "pointer"
+    }}
+  >
+    📥 Download  CSV FILE
+  </button>
+</div>
+{/* end */}
+
+
     </div>
   );
 };

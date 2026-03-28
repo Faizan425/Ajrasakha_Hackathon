@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Insights.css';
 import { useNavigate } from "react-router-dom";
-  // ✅ IMPORTANT
+  
 
   
 
@@ -97,7 +97,7 @@ const InsightsPage: React.FC = () => {
   style={{
     marginTop: "10px",
     padding: "8px 14px",
-    backgroundColor: "#2563eb",
+    backgroundColor: "#133518",
     color: "white",
     border: "none",
     borderRadius: "6px",
