@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 const Operations: React.FC = () => {
   const [status, setStatus] = useState<'IDLE' | 'RUNNING' | 'SUCCESS' | 'ERROR'>('IDLE');
   const [logs, setLogs] = useState<string[]>([]);
-  const [result, setResult] = useState<{ runTime: string, message: string } | null>(null);
+  const [result, setResult] = useState<{ status: string,time: string, message: string } | null>(null);
 
   const runPipeline = async () => {
     setStatus('RUNNING');
@@ -33,7 +33,19 @@ const Operations: React.FC = () => {
   return (
     <div style={styles.container}>
       <div style={styles.card}>
-        <h1 style={styles.header}>📡 Satellite Operations Center</h1>
+        {/* <h1 style={styles.header}>📡 Satellite Operations Center</h1> */}
+        <h1
+          style={{
+            color: '#c62828',
+            fontSize: 'clamp(1.4rem, 5vw, 2.5rem)', // 🔥 responsive
+            lineHeight: '1.2',
+            textAlign: 'center',
+            padding: '0 10px',
+            wordBreak: 'break-word'
+          }}
+        >
+          Control Center: Alert Broadcasting
+        </h1>
         <p>Manually trigger a data refresh cycle for all registered regions.</p>
 
         {/* THE BIG RED BUTTON */}
@@ -59,7 +71,7 @@ const Operations: React.FC = () => {
           {status === 'SUCCESS' && result && (
             <div style={styles.resultBox}>
               <p><strong>STATUS:</strong> {result.status}</p>
-              <p><strong>TIME:</strong> {result.runTime}</p>
+              <p><strong>TIME:</strong> {result.time}</p>
               <p><strong>DETAILS:</strong> {result.message}</p>
             </div>
           )}
@@ -89,7 +101,12 @@ const styles: { [key: string]: React.CSSProperties } = {
   },
   header: {
     color: '#1e293b',
-    marginBottom: '10px'
+    marginBottom: '10px',
+    fontSize: 'clamp(1.4rem, 5vw, 2.4rem)', // 🔥 responsive scaling
+    lineHeight: '1.2',
+    textAlign: 'center',
+    padding: '0 10px',        // prevents touching screen edges
+    wordWrap: 'break-word'    // avoids overflow on small screens
   },
   button: {
     marginTop: '30px',

@@ -68,3 +68,40 @@
 }
 
 .water-rec { border-left-color: #0288d1; }
+@media (max-width:768px){
+
+  .card{
+    padding:16px;
+    min-height:auto;
+  }
+
+  .circular-progress{
+    width:120px;
+    height:120px;
+    margin:15px 0;
+  }
+
+  .inner-circle{
+    width:90px;
+    height:90px;
+  }
+
+  .score{
+    font-size:1.5rem;
+  }
+
+  .recommendation{
+    font-size:0.85rem;
+    padding:8px;
+  }
+
+  .droplet-container{
+    width:60px;
+    height:80px;
+  }
+
+  .ndwi-val{
+    font-size:1rem;
+  }
+
+}

@@ -4,6 +4,23 @@
   min-height: 100vh;
 }
 
+.risk-title {
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  color: #c62828;
+  margin: 20px 0;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .risk-title {
+    font-size: 36px;
+    margin: 12px 0;
+    padding: 0 10px;
+  }
+}
+
 .alerts-header {
   display: flex;
   justify-content: space-between;

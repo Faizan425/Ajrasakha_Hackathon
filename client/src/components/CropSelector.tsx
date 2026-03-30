@@ -5,8 +5,6 @@ const crops = [
   { id: 'Rice', icon: '🌾' },
   { id: 'Wheat', icon: '🌾' },
   { id: 'Cotton', icon: '☁️' },
-  { id: 'Corn', icon: '🌽' },
-  { id: 'Soybean', icon: '🌱' }
 ];
 
 interface Props {

@@ -52,7 +52,7 @@ const InsightsPage: React.FC = () => {
   return (
     <div className="insights-page">
       <header className="insights-header">
-        <h1>Smart Insights</h1>
+        <h1 className="insights-title">Smart Insights</h1>
         <p>Expert analysis of your field data</p>
       </header>
 

@@ -10,6 +10,7 @@ interface Alert {
   action: string;
   date: string;
   status: string; 
+  location: string;
 }
 
 const AlertsPage: React.FC = () => {
@@ -67,7 +68,7 @@ const AlertsPage: React.FC = () => {
   return (
     <div className="alerts-page">
       <header className="alerts-header">
-        <h1>Risk Center</h1>
+        <h1 className="risk-title">Risk Center</h1>
       </header>
 
       {/* Filter Tabs */}
