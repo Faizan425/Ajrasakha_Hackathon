@@ -76,11 +76,11 @@ const WeatherCard: React.FC<Props> = ({ crop }) => {
   useEffect(() => {
     const fetchWeather = async () => {
       try {
-        // 🔥 1. Get regions from backend
+        //  1. Get regions from backend
         const res = await fetch("http://localhost:5000/api/regions");
         const regions = await res.json();
 
-        // 🔥 2. Find region based on crop
+        // 2. Find region based on crop
         const region = regions.find((r: any) =>
           r.cropType?.toLowerCase() === crop?.toLowerCase()
         );
@@ -90,16 +90,16 @@ const WeatherCard: React.FC<Props> = ({ crop }) => {
           return;
         }
 
-        // ✅ FIXED (your schema uses lat/lng)
+        // FIXED (your schema uses lat/lng)
         const lat = region.coordinates.lat;
         const lon = region.coordinates.lng;
 
         console.log("📍 LOCATION:", region.name);
         console.log("LAT:", lat, "LON:", lon);
 
-        // 🔥 3. Fetch weather using coordinates
+        //  3. Fetch weather using coordinates
         const weatherRes = await fetch(
-          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=Weather_API&units=metric`
+          `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=68f4118907ed0202d1a37608bcdf4055&units=metric`
         );
 
         const data = await weatherRes.json();
@@ -112,22 +112,22 @@ const WeatherCard: React.FC<Props> = ({ crop }) => {
       }
     };
 
-    setWeather(null); // 🔥 reset on crop change
+    setWeather(null); 
     fetchWeather();
 
   }, [crop]);
 
-  // 🔄 Loading state
+  // Loading state
   if (!weather) {
     return <p style={{ color: "white", textAlign: "center" }}>Loading weather...</p>;
   }
 
-  // ❌ Error fallback
+  //  Error fallback
   if (!weather.main || !weather.weather) {
     return <p style={{ color: "white", textAlign: "center" }}>Weather unavailable</p>;
   }
 
-  // ✅ UI
+  //  UI
   return (
     <div style={{
       padding: "15px",
