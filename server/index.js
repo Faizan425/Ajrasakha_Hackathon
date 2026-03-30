@@ -15,6 +15,9 @@ const Insight = require('./models/Insight');
 const { GoogleGenerativeAI } = require('@google/generative-ai');
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY); 
 const cron = require('node-cron');
+const alertsRoute = require('./routes/sendAlerts');
+//to save user on login 
+const User = require('./models/User');
 
 
 const JWT_SECRET = "super_secret_hackathon_key_2026";
@@ -22,6 +25,7 @@ const JWT_SECRET = "super_secret_hackathon_key_2026";
 const app = express();
 app.use(cors()); 
 app.use(express.json());
+app.use('/api/alerts', alertsRoute);  
 
 
 mongoose.connect('mongodb://127.0.0.1:27017/Hackathon_db')
@@ -101,18 +105,26 @@ app.get('/api/regions/:id/data', async (req, res) => {
 // The "Big Red Button" - Updates all regions with new satellite data
 app.post('/api/run-pipeline', async (req, res) => {
   const start = Date.now();
-  
-  
+
   const regions = await Region.find();
-  
-  
+
   for (const region of regions) {
-    const newData = fetchSatelliteData(region.name);
-    
+
+    // fetch real satellite data
+    const newData = await fetchSatelliteData(region.name);
+
+    // save history
     await CropData.create({
       regionId: region._id,
       metrics: newData
     });
+
+    // update latest values in Region
+    await Region.findByIdAndUpdate(region._id, {
+      latestNDVI: newData.ndvi,
+      status: newData.status
+    });
+
   }
 
   res.json({
@@ -121,7 +133,6 @@ app.post('/api/run-pipeline', async (req, res) => {
     time: `${Date.now() - start}ms`
   });
 });
-
 app.get('/api/regions/:id/health', async (req, res) => {
   try {
     // 1. Get the Region Name
@@ -238,7 +249,7 @@ cron.schedule('0 0 * * *', async () => {
       
       await CropData.create({
         regionId: region._id,
-        metrics: newData
+        metrics: satelliteData
       });
       count++;
     }
@@ -252,6 +263,52 @@ cron.schedule('0 0 * * *', async () => {
 app.get('/api/alerts', async (req, res) => {
   const alerts = await Alert.find();
   res.json(alerts);
+});
+
+app.post("/api/add-farmer", async (req, res) => {
+  try {
+    console.log(req.body);
+    const { name, email, location } = req.body;
+
+    if (!name || !email || !location) {
+      return res.status(400).json({ message: "All fields are required" });
+    }
+
+    // Check if farmer already exists
+    const existingFarmer = await User.findOne({ email });
+
+    if (existingFarmer) {
+      return res.status(400).json({ message: "Farmer with this email already exists" });
+    }
+
+    // If not exist → create new farmer
+    const newUser = new User({
+      name,
+      email,
+      location
+    });
+
+    await newUser.save();
+
+    res.status(201).json({
+      message: "Farmer added successfully",
+      user: newUser
+    });
+
+  } catch (err) {
+    console.error("Add Farmer Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+app.get("/api/farmers", async (req, res) => {
+  try {
+    const farmers = await User.find();   // use User model
+    res.json(farmers);
+  } catch (err) {
+    console.error("Fetch Farmers Error:", err);
+    res.status(500).json({ message: "Server error" });
+  }
 });
 
 app.listen(5000, () => {

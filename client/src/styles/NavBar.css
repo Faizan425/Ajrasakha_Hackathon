@@ -1,0 +1,32 @@
+.navList{
+  display:flex;
+  list-style:none;
+  gap:25px;
+}
+
+.menuButton{
+  display:none;
+}
+
+@media (max-width:768px){
+
+  .menuButton{
+    display:block;
+  }
+
+  .navList{
+    display:none;
+  }
+
+  .mobileMenu{
+    display:flex;
+    flex-direction:column;
+    position:absolute;
+    top:60px;
+    right:0;
+    background:#1e293b;
+    width:200px;
+    padding:20px;
+  }
+
+}

@@ -4,7 +4,7 @@ import WaterStressCard from './cards/WaterStressCard';
 import TrendComparisonCard from './cards/TrendComparisonCard';
 import '../styles/SwipeableCards.css';
 
-const SwipeableCards = ({ data, cropName }: any) => {
+const SwipeableCards = ({data, cropName ,regionId}:any )=> {
   const [activeIndex, setActiveIndex] = useState(0);
   const totalCards = 3;
 
@@ -13,11 +13,11 @@ const SwipeableCards = ({ data, cropName }: any) => {
 
   return (
     <div className="swipe-container">
-      {console.log(data, cropName)}
+      {/*console.log(data, cropName)*/}
       <div className="slider-track" style={{ transform: `translateX(-${activeIndex * 100}%)` }}>
         <div className="slide"><HealthSummaryCard data={data} /></div>
         <div className="slide"><WaterStressCard data={data} /></div>
-        <div className="slide"><TrendComparisonCard cropName={cropName} /></div>
+        <div className="slide"><TrendComparisonCard regionId={regionId} /></div>
       </div>
 
       <div className="navigation-controls">

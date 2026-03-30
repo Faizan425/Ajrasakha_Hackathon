@@ -8,7 +8,8 @@ import MapPage from "./pages/MapPage";
 import Operations from "./pages/Operations";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
-
+import AddFarmer from "./pages/AddFarmer";
+import FarmersPage from "./pages/FarmersPage";
 const AppRoutes: React.FC = () => {
   return (
     <MainLayout>
@@ -22,6 +23,8 @@ const AppRoutes: React.FC = () => {
         <Route path="/ops" element={<Operations />} />
         <Route path = "/login" element = {<Login />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path="/add-farmer" element={<AddFarmer />} />
+        <Route path="/farmers" element={<FarmersPage />} />
       </Routes>
     </MainLayout>
   );

@@ -1,0 +1,83 @@
+/* Centering the entire card */
+.farmer-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Farmer Card */
+.farmer-card {
+  background-color: #ffffff;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.farmer-card h2 {
+  margin-bottom: 30px;
+  color: #2d3436;
+}
+
+/* Input Group */
+.input-group {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+/* Inputs */
+.farmer-input {
+  width: 100%;
+  padding: 12px 15px;
+  font-size: 16px;
+  border: 1px solid #dfe6e9;
+  border-radius: 8px;
+  outline: none;
+  transition: border-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.farmer-input:focus {
+  border-color: #00b894;
+}
+
+/* Select */
+.farmer-select {
+  background-color: white;
+  cursor: pointer;
+}
+
+/* Button */
+.farmer-button {
+  width: 100%;
+  padding: 12px;
+  font-size: 18px;
+  font-weight: bold;
+  color: white;
+  background-color: #00b894;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.farmer-button:hover {
+  background-color: #009476;
+}
+
+/* Error Message */
+.error-text {
+  color: #d63031;
+  background-color: #fab1a044;
+  padding: 10px;
+  border-radius: 5px;
+  font-size: 14px;
+  margin-bottom: 15px;
+  border: 1px solid #d63031;
+}

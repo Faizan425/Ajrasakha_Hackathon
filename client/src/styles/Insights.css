@@ -11,8 +11,25 @@
 .insights-header p {
   color: #666;
   font-size: 0.9rem;
+  padding: 20px;
 }
 
+.insights-title {
+  font-size: 36px;
+  font-weight: bold;
+  text-align: center;
+  color: #c62828;
+  margin: 20px 0;
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .insights-title {
+    font-size: 32px;
+    margin: 12px 0;
+    padding: 0 10px;
+  }
+}
 .insights-grid {
   margin-top: 20px;
   display: flex;

@@ -106,6 +106,7 @@ const Dashboard: React.FC = () => {
   const [selectedCrop, setSelectedCrop] = useState<string>('Rice');
   const [data, setData] = useState<DashboardData | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const [regionId, setRegionId] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -123,6 +124,7 @@ const Dashboard: React.FC = () => {
         if (matchedRegion) {
           // 3. ZERO-LATENCY MAPPING: 
           // We already have the data! Just shape it for the SwipeableCards.
+          setRegionId(matchedRegion._id);
           const mappedData: DashboardData = {
             ndvi: matchedRegion.latestNDVI || 0,
             healthScore: matchedRegion.latestNDVI || 0, 
@@ -165,7 +167,7 @@ const Dashboard: React.FC = () => {
           Scanning Satellite Data... 📡
         </div>
       ) : data ? (
-        <SwipeableCards data={data} cropName={selectedCrop} />
+        <SwipeableCards data={data} cropName={selectedCrop} regionId={regionId}/>
       ) : (
         <div style={{textAlign: 'center', padding: '20px', color: '#ccc'}}>
           No sensor data available for {selectedCrop}.

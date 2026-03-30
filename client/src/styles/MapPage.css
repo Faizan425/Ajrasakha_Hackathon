@@ -1,0 +1,30 @@
+.map-page {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 60px);
+}
+
+/* DROPDOWN */
+.top-controls {
+  padding: 10px;
+  background: white;
+  border-bottom: 1px solid #ddd;
+}
+
+.top-controls select {
+  width: 100%;
+  padding: 10px;
+  border-radius: 6px;
+}
+
+/* MAP */
+.map-wrapper {
+  flex: 1;   /* 🔥 FULL SPACE */
+}
+
+/* REGION */
+.region-box {
+  padding: 15px;
+  background: #f9f9f9;
+  border-top: 1px solid #ddd;
+}
