@@ -1,8 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import '../styles/Insights.css';
+import { useNavigate } from "react-router-dom";
+  
+
+  
+
 
 interface Insight {
   _id: string;
+    regionId: string;
   title: string;
   cause: string;
   prediction: string;
@@ -11,6 +17,7 @@ interface Insight {
 }
 
 const InsightsPage: React.FC = () => {
+   const navigate = useNavigate(); 
   const [insights, setInsights] = useState<Insight[]>([]);
   const [loading, setLoading] = useState(true);
   
@@ -22,6 +29,7 @@ const InsightsPage: React.FC = () => {
     fetch('http://localhost:5000/api/insights')
       .then(res => res.json())
       .then(data => {
+        console.log("INSIGHTS:", data); 
         setInsights(data);
         setLoading(false);
       })
@@ -48,7 +56,9 @@ const InsightsPage: React.FC = () => {
     }
     setAnalyzingId(null);
   };
-
+  const downloadReport = (id: string) => {
+  window.open(`http://localhost:5000/api/report/${id}`, "_blank");
+};
   return (
     <div className="insights-page">
       <header className="insights-header">
@@ -79,11 +89,42 @@ const InsightsPage: React.FC = () => {
             {/* AI RESPONSE AREA */}
             {aiResponses[item._id] ? (
               <div style={{ background: '#f0fdf4', padding: '15px', borderRadius: '8px', marginTop: '15px', borderLeft: '4px solid #22c55e' }}>
+                 
                 <h3 style={{ color: '#166534', marginTop: 0, fontSize: '0.9rem' }}>✨ AI DEEP ANALYSIS</h3>
                 <p style={{ fontSize: '0.9rem', whiteSpace: 'pre-wrap', color: '#15803d' }}>{aiResponses[item._id]}</p>
+                 <button 
+  onClick={() => downloadReport(item.regionId)}
+  style={{
+    marginTop: "10px",
+    padding: "8px 14px",
+    backgroundColor: "#133518",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "0.9rem"
+  }}
+>
+  📄 Download Report
+</button>
+<button 
+  onClick={() => navigate(`/trends/${item.regionId}`)}
+  style={{
+    marginTop: "10px",
+    padding: "8px 14px",
+    backgroundColor: "#16a34a",
+    color: "white",
+    border: "none",
+    borderRadius: "6px",
+    cursor: "pointer",
+    fontSize: "0.9rem"
+  }}
+>
+  📈 View Trend Analysis
+</button>
               </div>
             ) : (
-              <button 
+              <><button 
                 className="learn-more-btn" 
                 onClick={() => handleDeepAnalysis(item)}
                 disabled={analyzingId === item._id}
@@ -91,6 +132,11 @@ const InsightsPage: React.FC = () => {
               >
                 {analyzingId === item._id ? '🤖 Analyzing Data...' : 'Read Deep Analysis'}
               </button>
+             
+              {/* <button onClick={() => downloadReport(item.regionId)}>
+    📄 Download Report
+  </button> */}
+              </>
             )}
           </div>
         ))}

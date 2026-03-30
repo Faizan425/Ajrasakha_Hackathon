@@ -1,7 +1,9 @@
 const path = require('path');
+const PDFDocument = require('pdfkit');
 // __dirname is the absolute path to the folder containing this index.js file
-require('dotenv').config({ path: path.join(__dirname, '../.env') }); 
-
+require('dotenv').config();
+const { getNDVI } = require('./agro');
+const fetch = require("node-fetch");
 console.log("MY API KEY IS:", process.env.GEMINI_API_KEY);
 const express = require('express');
 const jwt = require('jsonwebtoken');
@@ -96,62 +98,191 @@ app.get('/api/regions/:id/data', async (req, res) => {
                              .sort({ timestamp: -1 }); 
   res.json(data);
 });
+//now
+app.get('/api/regions/:id/health', async (req, res) => {
+  try {
+    const regionId = req.params.id;
 
+    // 🔹 Get region
+    const region = await Region.findById(regionId);
+    if (!region) {
+      return res.status(404).json({ error: "Region not found" });
+    }
 
+    // 🔹 Get last 15 NDVI records
+    const data = await CropData.find({ regionId })
+      .sort({ timestamp: 1 })   // oldest → newest
+      .limit(15);
+
+    // 🔹 Format response
+    const history = data.map(d => ({
+      date: d.timestamp,
+      ndvi: d.metrics?.ndvi || 0
+    }));
+
+    res.json({
+      regionName: region.name,
+      latestNDVI: history.length ? history[history.length - 1].ndvi : 0,
+      history
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Server error" });
+  }
+});
 // The "Big Red Button" - Updates all regions with new satellite data
+// app.post('/api/run-pipeline', async (req, res) => {
+//   const start = Date.now();
+  
+  
+//   const regions = await Region.find();
+  
+  
+//   for (const region of regions) {
+//     const ndviData = await getNDVI();
+
+// if (!ndviData) {
+//   console.log("❌ No NDVI data, skipping...");
+//   continue;
+// }
+//    await CropData.create({
+//   regionId: region._id,
+//   metrics: {
+//     ndvi: ndviData.ndvi
+//   },
+//   timestamp: ndviData.timestamp
+// });
+
+// await Region.findByIdAndUpdate(region._id, {
+//   latestNDVI: ndviData.ndvi
+// });
+//     // await CropData.create({
+//     //   regionId: region._id,
+//     //   metrics: newData
+//     // });
+//   }
+
+//   res.json({
+//     status: "Success",
+//     message: `Updated ${regions.length} regions via Satellite Link.`,
+//     time: `${Date.now() - start}ms`
+//   });
+// });
+
 app.post('/api/run-pipeline', async (req, res) => {
-  const start = Date.now();
-  
-  
   const regions = await Region.find();
-  
-  
+
   for (const region of regions) {
-    const newData = fetchSatelliteData(region.name);
-    
+    const ndviData = await getNDVI();
+
+    // ✅ skip invalid values
+    if (!ndviData || ndviData.ndvi === 0 || ndviData.ndvi == null) {
+      console.log("❌ Skipping invalid NDVI");
+      continue;
+    }
+
     await CropData.create({
       regionId: region._id,
-      metrics: newData
+      metrics: {
+        ndvi: ndviData.ndvi
+      },
+      timestamp: ndviData.timestamp
+    });
+
+    await Region.findByIdAndUpdate(region._id, {
+      latestNDVI: ndviData.ndvi
     });
   }
 
-  res.json({
-    status: "Success",
-    message: `Updated ${regions.length} regions via Satellite Link.`,
-    time: `${Date.now() - start}ms`
-  });
+  res.json({ message: "Pipeline updated with real NDVI" });
 });
 
+// app.get('/api/regions/:id/health', async (req, res) => {
+//   try {
+//     // 1. Get the Region Name
+//     const region = await Region.findById(req.params.id);
+//     if (!region) return res.status(404).json({ error: "Region not found" });
+
+    
+//     const allData = await CropData.find({ regionId: req.params.id })
+//                                   .sort({ timestamp: -1 }); 
+
+//     if (!allData.length) return res.json({ regionName: region.name, latestNDVI: 0, status: "No Data", history: [] });
+
+    
+//     const response = {
+//       regionName: region.name,
+//       latestNDVI: region.latestNDVI || 0, 
+//       status: region.status || "No Data",
+//       // Convert DB history to simple array (will be empty array if no CropData exists yet)
+//       history: allData.map(d => ({
+//         date: d.timestamp, 
+//         ndvi: d.metrics?.ndvi || 0
+//       }))
+//     };
+
+//     res.json(response);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
 app.get('/api/regions/:id/health', async (req, res) => {
   try {
-    // 1. Get the Region Name
     const region = await Region.findById(req.params.id);
-    if (!region) return res.status(404).json({ error: "Region not found" });
 
-    
     const allData = await CropData.find({ regionId: req.params.id })
-                                  .sort({ timestamp: -1 }); 
+      .sort({ timestamp: 1 });
 
-    if (!allData.length) return res.json({ regionName: region.name, latestNDVI: 0, status: "No Data", history: [] });
+    const history = allData
+      .filter(d => d.metrics?.ndvi !== undefined && d.metrics.ndvi !== 0)
+      .map(d => ({
+        date: d.timestamp,
+        ndvi: d.metrics.ndvi
+      }));
 
-    
-    const response = {
+    res.json({
       regionName: region.name,
-      latestNDVI: region.latestNDVI || 0, 
-      status: region.status || "No Data",
-      // Convert DB history to simple array (will be empty array if no CropData exists yet)
-      history: allData.map(d => ({
-        date: d.timestamp, 
-        ndvi: d.metrics?.ndvi || 0
-      }))
-    };
+      latestNDVI: history.length ? history[history.length - 1].ndvi : null,
+      history
+    });
 
-    res.json(response);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
+app.post('/api/trend-analysis', async (req, res) => {
+  const { history } = req.body;
+
+  try {
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash" });
+
+    const trendData = history
+      .map(h => `Date: ${new Date(h.date).toDateString()}, NDVI: ${h.ndvi}`)
+      .join("\n");
+
+    const prompt = `
+You are an agriculture expert.
+
+NDVI trend data:
+${trendData}
+
+1. What is happening to crop health
+2. What will happen if this continues
+3. What farmer should do
+
+Give 3 short points.
+`;
+
+    const result = await model.generateContent(prompt);
+
+    res.json({ analysis: result.response.text() });
+
+  } catch (err) {
+    res.status(500).json({ error: "AI failed" });
+  }
+});
 app.get('/api/insights', async (req, res) => {
   try {
     const insights = await Insight.find().sort({ date: -1 });
@@ -164,7 +295,12 @@ app.get('/api/insights', async (req, res) => {
 // 2. CREATE INSIGHT (Protected Admin Route)
 app.post('/api/insights', verifyAdmin, async (req, res) => {
   try {
-    const newInsight = await Insight.create(req.body);
+   const region = await Region.findOne();  // get a region
+
+const newInsight = await Insight.create({
+  ...req.body,
+  regionId: region._id   
+});
     res.json(newInsight);
   } catch (err) {
     res.status(500).json({ error: err.message });
@@ -197,7 +333,17 @@ app.post('/api/analyze', async (req, res) => {
     const aiResponse = result.response.text();
     
     // 4. Send the AI's brilliant plan back to your React frontend
-    res.json({ analysis: aiResponse });
+   const region = await Region.findOne();
+
+await Insight.create({
+  regionId: region._id,
+  title,
+  cause,
+  prediction,
+  recommendation: aiResponse
+});
+
+res.json({ analysis: aiResponse });
 
   } catch (err) {
     console.error("AI Generation Error:", err);
@@ -253,7 +399,79 @@ app.get('/api/alerts', async (req, res) => {
   const alerts = await Alert.find();
   res.json(alerts);
 });
+app.get('/api/report/:id', async (req, res) => {
+  try {
+    const region = await Region.findById(req.params.id);
 
+    const data = await CropData.findOne({
+      regionId: req.params.id,
+      "metrics.ndvi": { $exists: true }
+    }).sort({ timestamp: -1 });
+
+    const insight = await Insight.findOne({
+      regionId: req.params.id
+    }).sort({ date: -1 });
+
+    const doc = new PDFDocument();
+
+    res.setHeader('Content-Type', 'application/pdf');
+    res.setHeader('Content-Disposition', 'attachment; filename=report.pdf');
+
+    doc.pipe(res);
+
+    doc.fontSize(20).text('Farmer Advisory Report', { align: 'center' });
+    doc.moveDown();
+
+    doc.text(`Region: ${region?.name}`);
+    doc.text(`Date: ${new Date().toLocaleDateString()}`);
+
+    doc.moveDown();
+    doc.text('Crop Data:');
+    doc.text(`NDVI: ${data?.metrics?.ndvi || 'N/A'}`);
+
+    doc.moveDown();
+    doc.text('AI Recommendation:');
+    doc.text(insight?.recommendation || 'No insight available');
+
+    doc.end();
+
+  } catch (err) {
+    res.status(500).send('Error generating report');
+  }
+});
+
+
+
+//ndvi
+app.get('/create-polygon', async (req, res) => {
+  const response = await fetch(
+    `http://api.agromonitoring.com/agro/1.0/polygons?appid=${process.env.AGRO_API_KEY}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        name: "Farm",
+        geo_json: {
+          type: "Feature",
+          properties: {},
+          geometry: {
+            type: "Polygon",
+            coordinates: [[
+              [77.86, 9.16],
+              [77.88, 9.16],
+              [77.88, 9.18],
+              [77.86, 9.18],
+              [77.86, 9.16]
+            ]]
+          }
+        }
+      })
+    }
+  );
+
+  const data = await response.json();
+  res.json(data);
+});
 app.listen(5000, () => {
   console.log('🚀 Server running on http://localhost:5000');
 });
