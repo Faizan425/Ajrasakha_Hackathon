@@ -8,6 +8,7 @@ import MapPage from "./pages/MapPage";
 import Operations from "./pages/Operations";
 import Login from "./pages/Login";
 import AdminDashboard from "./pages/AdminDashboard";
+import FarmerChat from "./pages/FarmerChat";
 
 const AppRoutes: React.FC = () => {
   return (
@@ -22,6 +23,7 @@ const AppRoutes: React.FC = () => {
         <Route path="/ops" element={<Operations />} />
         <Route path = "/login" element = {<Login />} />
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
+        <Route path= "/chat" element = {<FarmerChat />} />
       </Routes>
     </MainLayout>
   );

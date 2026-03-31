@@ -29,7 +29,11 @@ const Navbar: React.FC = () => {
             Insights
           </NavLink>
         </li>
-
+        <li>
+          <NavLink to="/chat" style = {navStyle}>
+            Farmer Chat
+          </NavLink>
+        </li>
         <li>
           <NavLink to="/ops" style={navStyle}>
             Ops Center

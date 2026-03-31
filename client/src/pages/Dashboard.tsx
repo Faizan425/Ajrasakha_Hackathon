@@ -90,6 +90,7 @@
 import React, { useState, useEffect } from 'react';
 import CropSelector from '../components/CropSelector';
 import SwipeableCards from '../components/SwipeableCards';
+import { api } from "../services/api";
 import '../styles/Dashboard.css';
 
 // Define the shape of data we expect from the API
@@ -112,9 +113,10 @@ const Dashboard: React.FC = () => {
       setLoading(true);
       try {
         // 1. Fetch all regions
-        const regionsRes = await fetch('http://localhost:5000/api/regions');
-        const regions = await regionsRes.json();
-        
+        // const regionsRes = await fetch('http://localhost:5000/api/regions');
+        // const regionsRes =  await api.get('/regions');
+        // const regions =  regionsRes.data;
+        const {data : regions} =  await api.get('/regions');
         // 2. Find the region ID that matches the selected crop
         const matchedRegion = regions.find((r: any) => 
           r.cropType.toLowerCase() === selectedCrop.toLowerCase()

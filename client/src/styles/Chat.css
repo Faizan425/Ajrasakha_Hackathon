@@ -1,0 +1,88 @@
+/* This turns the main window into a vertical stack */
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 15px; /* Puts space between messages */
+  padding: 20px;
+  max-width: 800px; 
+  margin: 0 auto; /* Centers the chat window on the screen */
+  font-family: sans-serif;
+}
+
+/* AI Messages */
+.left-div {
+  align-self: flex-start; /* Forces it to the left */
+  background-color: #f1f1f1; /* Light gray background */
+  color: black;
+  padding: 12px 18px;
+  border-radius: 18px 18px 18px 0px; /* Chat bubble tail effect */
+  max-width: 80%; /* Prevents long messages from stretching across the whole screen */
+}
+
+/* User Messages */
+.right-div {
+  align-self: flex-end; /* Forces it to the right! */
+  background-color: #2e7d32; /* A nice agricultural green */
+  color: white;
+  padding: 12px 18px;
+  border-radius: 18px 18px 0px 18px;
+  max-width: 80%;
+}
+
+/* Fixes Markdown margin issues inside the bubbles */
+.left-div p, .right-div p {
+  margin: 0; 
+}
+
+/* The container holding the input area */
+.input-wrapper {
+  margin-top: auto; /* Pushes the input box to the bottom of the container */
+  padding-top: 15px;
+  border-top: 1px solid #e0e0e0; /* A subtle line separating chat from input */
+}
+
+/* The form itself acts as our flex row */
+.input-form {
+  display: flex;
+  gap: 10px; /* Space between the input box and the button */
+}
+
+/* The Text Input Field */
+.chat-input {
+  flex: 1; /* The magic property! This forces the input to take up all available horizontal space */
+  padding: 14px 20px;
+  border: 1px solid #ccc;
+  border-radius: 25px; /* Pill-shaped corners */
+  font-size: 16px;
+  outline: none; /* Removes the ugly default browser outline when clicked */
+  transition: border-color 0.2s; /* Smooth transition for focus */
+}
+
+/* Make the border green when the user clicks on it */
+.chat-input:focus {
+  border-color: #2e7d32;
+}
+
+/* The Send Button */
+.send-button {
+  background-color: #2e7d32; /* Matches your user bubble */
+  color: white;
+  border: none;
+  border-radius: 25px;
+  padding: 0 24px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+/* Hover effect for the button */
+.send-button:hover {
+  background-color: #1b5e20; /* Slightly darker green when hovered */
+}
+
+/* Fades out the button if the input is empty */
+.send-button:disabled {
+  background-color: #a5d6a7;
+  cursor: not-allowed;
+}

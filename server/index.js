@@ -2,7 +2,7 @@ const path = require('path');
 // __dirname is the absolute path to the folder containing this index.js file
 require('dotenv').config({ path: path.join(__dirname, '../.env') }); 
 
-console.log("MY API KEY IS:", process.env.GEMINI_API_KEY);
+// console.log("MY API KEY IS:", process.env.GEMINI_API_KEY);
 const express = require('express');
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
@@ -30,30 +30,38 @@ mongoose.connect('mongodb://127.0.0.1:27017/Hackathon_db')
 
 
 
-app.get('/api/regions', async (req, res) => {
-  try {
-    const regions = await Region.find();
+// app.get('/api/regions', async (req, res) => {
+//   try {
+//     const regions = await Region.find();
     
-    // This uses "Promise.all" to do it fast
-    const regionsWithStatus = await Promise.all(regions.map(async (region) => {
-      const latestData = await CropData.findOne({ regionId: region._id })
-                                       .sort({ timestamp: -1 });
+//     // This uses "Promise.all" to do it fast
+//     const regionsWithStatus = await Promise.all(regions.map(async (region) => {
+//       const latestData = await CropData.findOne({ regionId: region._id })
+//                                        .sort({ timestamp: -1 });
       
-      return {
-        _id: region._id,
-        name: region.name,
-        coordinates: region.coordinates,
-        latestNDVI:region.latestNDVI,
-        cropType: region.cropType,
-        status: region.status
-      };
-    }));
+//       return {
+//         _id: region._id,
+//         name: region.name,
+//         coordinates: region.coordinates,
+//         latestNDVI:region.latestNDVI,
+//         cropType: region.cropType,
+//         status: region.status
+//       };
+//     }));
 
-    res.json(regionsWithStatus);
-  } catch (err) {
-    res.status(500).json({ error: err.message });
-  }
-});
+//     res.json(regionsWithStatus);
+//   } catch (err) {
+//     res.status(500).json({ error: err.message });
+//   }
+// });
+  app.get('/api/regions', async (req, res) =>{
+    try {
+      const regions = await Region.find();
+      res.json(regions);
+    } catch(err) {
+      res.status(500).json({error: "Failed to fetch regions"});
+    }
+  });
 
 app.post('/api/login', (req, res) => {
   const {username, password} = req.body;
@@ -99,27 +107,61 @@ app.get('/api/regions/:id/data', async (req, res) => {
 
 
 // The "Big Red Button" - Updates all regions with new satellite data
-app.post('/api/run-pipeline', async (req, res) => {
-  const start = Date.now();
+// app.post('/api/run-pipeline', async (req, res) => {
+//   const start = Date.now();
   
   
-  const regions = await Region.find();
+//   const regions = await Region.find();
   
   
-  for (const region of regions) {
-    const newData = fetchSatelliteData(region.name);
+//   for (const region of regions) {
+//     const newData = fetchSatelliteData(region.name);
     
-    await CropData.create({
-      regionId: region._id,
-      metrics: newData
-    });
-  }
+//     await CropData.create({
+//       regionId: region._id,
+//       metrics: newData
+//     });
+//   }
 
-  res.json({
-    status: "Success",
-    message: `Updated ${regions.length} regions via Satellite Link.`,
-    time: `${Date.now() - start}ms`
-  });
+//   res.json({
+//     status: "Success",
+//     message: `Updated ${regions.length} regions via Satellite Link.`,
+//     time: `${Date.now() - start}ms`
+//   });
+// });
+app.post('/api/run-pipeline', async (req, res) => {
+  try {
+    const start = Date.now();
+    const regions = await Region.find();
+    
+    for (const region of regions) {
+      // 1. ADDED AWAIT: Wait for the actual satellite API to return the JSON
+      const newData = await fetchSatelliteData(region.name);
+      
+      // 2. Save to the historical CropData table
+      await CropData.create({
+        regionId: region._id,
+        metrics: newData
+      });
+
+      // 3. ARCHITECTURAL FIX: Update the Region model so the frontend Map & Dashboard update instantly!
+      await Region.findByIdAndUpdate(region._id, {
+        latestNDVI: newData.ndvi,
+        status: newData.status,
+        trend: newData.trend
+      });
+    }
+
+    res.json({
+      status: "Success",
+      message: `Updated ${regions.length} regions via Satellite Link.`,
+      runTime: `${Date.now() - start}ms` // Matched the frontend 'runTime' expectation
+    });
+    
+  } catch (error) {
+    console.error("❌ Manual Pipeline Failed:", error);
+    res.status(500).json({ status: "Error", message: error.message });
+  }
 });
 
 app.get('/api/regions/:id/health', async (req, res) => {
@@ -205,6 +247,28 @@ app.post('/api/analyze', async (req, res) => {
   }
 });
 
+app.post('/api/chat', async(req,res) => {
+  const { history, newMessage } = req.body
+  try {
+    const model = genAI.getGenerativeModel({model: "gemini-2.5-flash",
+    systemInstruction: "You are an expert agricultural scientist and government policy advisor in India. Your job is to analyze and answer only agriculture related queries of farmers. Analyze the following question and give a short concise answer, direct to official sources if unsure."})
+    const formattedHistory = history.map((msg) => ({
+      role: msg.sender === "User" ? "user" : "model",
+      parts: [{ text: msg.text }],
+    }));
+    const chat = model.startChat({
+      history: formattedHistory,
+    });
+  const result = await chat.sendMessage(newMessage);
+    const aiResponse = result.response.text();
+  res.json({ response: aiResponse });
+} catch(err) {
+  console.error( "AI generation Error: ", err );
+  res.status(500).json({error: "AI Engine Failed to respond."})
+}
+
+});
+
 app.put('/api/alerts/:id/status', async (req, res) => {
   try {
     const { id } = req.params;
@@ -224,6 +288,29 @@ app.put('/api/alerts/:id/status', async (req, res) => {
 });
 
 
+// cron.schedule('0 0 * * *', async () => {
+//   console.log('⏰ CRON JOB STARTED: Fetching daily satellite data...');
+  
+//   try {
+//     const regions = await Region.find();
+//     let count = 0;
+
+//     for (const region of regions) {
+      
+//       const satelliteData = await fetchSatelliteData(region.name);  
+      
+      
+//       await CropData.create({
+//         regionId: region._id,
+//         metrics: newData
+//       });
+//       count++;
+//     }
+//     console.log(`✅ CRON JOB FINISHED: Updated ${count} regions.`);
+//   } catch (err) {
+//     console.error('❌ CRON JOB FAILED:', err);
+//   }
+// });
 cron.schedule('0 0 * * *', async () => {
   console.log('⏰ CRON JOB STARTED: Fetching daily satellite data...');
   
@@ -233,13 +320,22 @@ cron.schedule('0 0 * * *', async () => {
 
     for (const region of regions) {
       
+      // 1. Fetch the live data
       const satelliteData = await fetchSatelliteData(region.name);  
       
-      
+      // 2. Save to history table (Fixing the newData typo!)
       await CropData.create({
         regionId: region._id,
-        metrics: newData
+        metrics: satelliteData 
       });
+
+      // 3. 🚀 CRITICAL FIX: Update the Region model so the live Map and Dashboard actually change!
+      await Region.findByIdAndUpdate(region._id, {
+        latestNDVI: satelliteData.ndvi,
+        status: satelliteData.status,
+        trend: satelliteData.trend
+      });
+
       count++;
     }
     console.log(`✅ CRON JOB FINISHED: Updated ${count} regions.`);
