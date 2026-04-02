@@ -18,7 +18,11 @@ export interface NDVIRecord {
 
 export interface RegionHealth {
   regionName: string;
+  cropType: string;
   latestNDVI: number;
   status: string;
+  trend: string;
+  healthScore: number;
+  ndwiScore: number;
   history: NDVIRecord[];
 }

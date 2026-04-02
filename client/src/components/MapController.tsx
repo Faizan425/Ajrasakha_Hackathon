@@ -11,8 +11,15 @@ export default function MapController({ selectedState }: Props) {
 
   useEffect(() => {
     if (selectedState) {
+      console.log(`🗺️ Map flying to ${selectedState.name}`);
       map.flyTo(selectedState.center, selectedState.zoom, {
         duration: 1.2,
+      });
+    } else {
+      console.log("🇮🇳 Map resetting to national view");
+      // Fly back to default India View
+      map.flyTo([22.5, 78.9], 5, {
+        duration: 1.5,
       });
     }
   }, [selectedState, map]);

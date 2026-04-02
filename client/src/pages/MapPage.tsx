@@ -48,13 +48,26 @@ export default function MapPage() {
           </div>
         </div>
 
-        {/* SATELLITE TOGGLE BUTTON */}
-        <button 
-          className="map-toggle-btn"
-          onClick={() => setIsSatellite(!isSatellite)}
-        >
-          {isSatellite ? "🗺️ Standard View" : "🛰️ Satellite View"}
-        </button>
+        {/* MAP CONTROLS */}
+        <div className="map-controls-overlay">
+          <button 
+            className="map-control-btn"
+            onClick={() => {
+              console.log("📍 Map Reset Clicked");
+              setSelectedState(null);
+              setSelectedRegion(null);
+            }}
+            title="Reset to India View"
+          >
+            🇮🇳 Reset
+          </button>
+          <button 
+            className="map-control-btn"
+            onClick={() => setIsSatellite(!isSatellite)}
+          >
+            {isSatellite ? "🗺️ Standard" : "🛰️ Satellite"}
+          </button>
+        </div>
 
         <MapContainer
           center={[22.5, 78.9]}
@@ -84,10 +97,11 @@ export default function MapPage() {
       <div className="control-panel-container">
         
         {/* Top: State Selector */}
-        <div style={{ height: "50%", overflowY: "auto", borderBottom: "1px solid #ddd" }}>
+        <div style={{ height: "50%", borderBottom: "1px solid #ddd" }}>
           <StatePanel
             states={INDIA_STATES}
             onSelect={setSelectedState}
+            activeStateName={selectedState?.name || null}
           />
         </div>
 

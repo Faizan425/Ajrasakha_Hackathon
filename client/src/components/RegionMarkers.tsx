@@ -66,7 +66,7 @@ export default function RegionMarkers({ onSelect }: Props) {
           <Popup>
             <strong>{region.name}</strong><br/>
             Status: {region.status}
-            {console.log(region)}
+            {/* {console.log(region)} */}
           </Popup>
         </Marker>
       ))}

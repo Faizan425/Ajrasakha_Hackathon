@@ -124,25 +124,27 @@ app.post('/api/run-pipeline', async (req, res) => {
 
 app.get('/api/regions/:id/health', async (req, res) => {
   try {
-    // 1. Get the Region Name
     const region = await Region.findById(req.params.id);
     if (!region) return res.status(404).json({ error: "Region not found" });
 
-    
     const allData = await CropData.find({ regionId: req.params.id })
                                   .sort({ timestamp: -1 }); 
 
-    if (!allData.length) return res.json({ regionName: region.name, latestNDVI: 0, status: "No Data", history: [] });
-
+    // If we have history, use the latest from history, otherwise use region-level defaults
+    const latestData = allData[0];
     
     const response = {
       regionName: region.name,
-      latestNDVI: region.latestNDVI || 0, 
-      status: region.status || "No Data",
-      // Convert DB history to simple array (will be empty array if no CropData exists yet)
+      cropType: region.cropType,
+      latestNDVI: latestData ? (latestData.metrics?.ndvi || 0) : (region.latestNDVI || 0),
+      status: latestData ? (latestData.metrics?.status || "Unknown") : (region.status || "Unknown"),
+      trend: latestData ? (latestData.metrics?.trend || "stable") : (region.trend || "stable"),
+      healthScore: latestData ? (latestData.metrics?.healthScore || 0) : (region.latestNDVI * 100 || 0),
+      ndwiScore: latestData ? (latestData.metrics?.ndwiScore || 0) : 0.5,
       history: allData.map(d => ({
         date: d.timestamp, 
-        ndvi: d.metrics?.ndvi || 0
+        ndvi: d.metrics?.ndvi || 0,
+        status: d.metrics?.status || "Unknown"
       }))
     };
 

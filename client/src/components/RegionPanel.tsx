@@ -28,8 +28,12 @@ export default function RegionPanel({ region }: Props) {
     try {
       const response = await api.post('/analyze', {
         title: `Crop Health in ${health.regionName}`,
-        cause: `Latest NDVI score is ${health.latestNDVI}`,
-        prediction: `Current status is ${health.status}`
+        cause: `Region: ${health.regionName}
+        Crop Type: ${health.cropType}
+        Latest NDVI: ${health.latestNDVI.toFixed(2)}
+        NDWI (Water Stress): ${health.ndwiScore.toFixed(2)}
+        Recent Trend: ${health.trend}`,
+        prediction: `Current status is ${health.status} with a health score of ${health.healthScore}/100.`
       });
       setAiAnalysis(response.data.analysis);
     } catch (error) {
@@ -45,11 +49,35 @@ export default function RegionPanel({ region }: Props) {
 
   return (
     <div className="region-panel">
-      <h3>{health.regionName}</h3>
+      <div className="panel-header">
+        <h3>{health.regionName}</h3>
+        <span className="crop-tag">{health.cropType}</span>
+      </div>
       
-      <div className="region-stats">
-        <p><strong>Latest NDVI:</strong> {health.latestNDVI}</p>
-        <p><strong>Status:</strong> <span className={`status ${health.status?.toLowerCase() || 'healthy'}`}>{health.status}</span></p>
+      <div className="region-stats-grid">
+        <div className="stat-box">
+          <span className="label">NDVI</span>
+          <span className="value">{health.latestNDVI.toFixed(2)}</span>
+        </div>
+        <div className="stat-box">
+          <span className="label">Health</span>
+          <span className="value">{health.healthScore}%</span>
+        </div>
+        <div className="stat-box">
+          <span className="label">Trend</span>
+          <span className={`value trend-${health.trend}`}>{health.trend}</span>
+        </div>
+        <div className="stat-box">
+          <span className="label">Moisture</span>
+          <span className="value">{health.ndwiScore.toFixed(2)}</span>
+        </div>
+      </div>
+
+      <div className="status-indicator">
+        <strong>Status:</strong> 
+        <span className={`status ${health.status?.toLowerCase() || 'healthy'}`}>
+          {health.status}
+        </span>
       </div>
 
       <button 
@@ -57,7 +85,7 @@ export default function RegionPanel({ region }: Props) {
         onClick={handleAiAnalysis}
         disabled={isLoadingAi}
       >
-        {isLoadingAi ? " Analyzing..." : " GenAI Analysis"}
+        {isLoadingAi ? "⏳ Processing Data..." : "🤖 GenAI Health Analysis"}
       </button>
 
       {aiAnalysis && (
